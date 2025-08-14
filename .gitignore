@@ -1,0 +1,36 @@
+## Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+## Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Bb]uild/
+[Bb]in/
+[Oo]bj/
+
+## Compiled binaries
+*.exe
+*.dll
+*.lib
+*.app
+*.pdb
+*.ipdb
+*.iobj
+*.ilk
+
+## MASM / Assembler outputs
+*.lst
+*.map
+
+## Others
+*.log
+*.cache
+*.tlog
+*.idb
+*.opendb
