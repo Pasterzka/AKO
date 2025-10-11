@@ -1,0 +1,93 @@
+1. Podać liczbę (w postaci szesnastkowej), która zostanie wprowadzona do rejestru DI po wykonaniu podanego niżej fragmentu programu:
+linie dw 242, 424, 37, −3, 1023, 5, 0
+— — — — — — — — —
+mov esi, OFFSET linie + 4
+mov ebx, 2
+mov di, [ebx][esi]
+
+Pamięć:
+    f2 00 a8 01 25 00 fd ff 00 04 05 00 00 00
+    0  1  2  3  4  5  6  7  8  9  10 11 12 13
+
+    wczytujemy fd ff do rejestru di
+
+ODP.: 0FFFDh lub inaczej -3
+
+
+2. Wyjaśnić dlaczego pewien tekst w języku polskim zakodowany w formacie UTF–8 zajmuje mniej miejsca w pamięci niż ten sam tekst zakodowany w formacie UTF–16? Czy zdanie to jest prawdziwe w stosunku do dowolnych tekstów zapisanych w UTF-8 i UTF-16?
+
+ODP.: Tekst w języku polskim zajmuje mniej miejsca w kodowaniu UTF-8 niż w UTF-16, ponieważ UTF-8 używa zmiennej liczby bajtów (1–4), a znaki ASCII zajmują tylko 1 bajt, podczas gdy UTF-16 zapisuje każdy znak co najmniej w 2 bajtach. Nie jest to jednak prawdą dla wszystkich języków — w językach takich jak chiński bardziej efektywny może być UTF-16.
+
+3. Należy dokonać konwersji punktu kodowego Unicode U+1F60E na zapis w kodowaniu UTF-16 (BE) i wyznaczone bajty zapisać w pamięci pod adresem 0000 0027h.
+
+znak po konwersji: D83D DE0Eh
+
+ODP.: Pamięć:
+    27 D8
+    29 3D
+    2B DE
+    2D 0E
+    2F 00
+    31 00
+
+4. Podać przykład rozkazu, w którym adres efektywny jest mniejszy od zawartości pola adresowego.
+
+ODP.: mov eax, [ebx+esi-10]
+
+5. Czym różni się działanie poniższych instrukcji
+mov ebx, OFFSET table+4
+lea ebx, table+4
+
+ODP.: MOV OFFSET table+4 ładuje do rejestru adres pamięci obliczony w czasie assemblacji, natomiast lea oblicza adres efektywny w czasie działania programu
+    OFFSET — adres jest obliczany podczas asemblerowania (stała wpisywana do kodu).
+    LEA — adres efektywny jest obliczany podczas wykonywania programu przez procesor.
+
+6.Wyjaśnić dlaczego w operacjach porównania rozkaz CMP można ewentualnie zastąpić rozkazem SUB, chociaż może to być niewygodne?
+
+ODP.: Ponieważ CMP wykonuje odejmowanie dwóch operandów, a następnie ustawia flagi procesora na podstawie wyniku, można to samo osiągnąć za pomocą SUB, ale wymagałoby to dodatkowego kroku, aby przywrócić oryginalną wartość jednego z operandów, co czyni to mniej wygodnym.
+
+7. W jaki sposób sygnalizowany jest nadmiar w operacjach dodawania i odejmowania na liczbach stałoprzecinkowych ze znakiem i bez znaku ?
+
+ODP.: Nadmiar w operacjach na liczbach bez znaku sygnalizuje flaga CF (Carry Flag), natomiast w operacjach na liczbach ze znakiem — flaga OF (Overflow Flag).
+    CF = 1 → wystąpiło przeniesienie poza najstarszy bit (przepełnienie przy liczbach bez znaku).
+    OF = 1 → wynik ma błędny znak (przepełnienie przy liczbach ze znakiem).
+
+8.W wyniku wykonania poniższego fragmentu programu, jeśli rejestr EDI będzie zawierał liczbę 0 lub 16, to nastąpi skok do miejsca programu opatrzonego etykietą zero_szesn,:
+TEST EDI, ...
+JZ zero_szesn
+Podać drugi argument rozkazu TEST (rozkaz TEST działa podobnie do AND, ale nie wpisuje bitowego iloczynu logicznego do podanego operandu).
+
+ODP,: TEST EDI, 0F0h
+
+9. Jaki rodzaj adresowania należy wybrać w sytuacji gdy adres danej, na której będzie wykonane działanie, będzie znany dopiero podczas wykonywania programu?
+
+ODP.: Adresowanie pośrednie lub indeksowe (indirect or indexed addressing). -> rejestry bazowe lub indeksowe
+
+10.Podać postać rozkazu, który zaneguje starsze bity rejestru EDI o numerach 31  16, natomiast bity o numerach 15  0 pozostaną niezmienione.
+
+ODP.: XOR EDI, 0FFFF0000h
+
+11.W jaki sposób sygnalizowany jest nadmiar w operacjach dzielenia?
+
+ODP.: W procesorach x86 jest to przerwanie sprzętowe typu 0, generowane automatycznie, gdy wynik dzielenia nie mieści się w rejestrze docelowym  lub przy dzieleniu przez zero.
+
+12. Bezpośrednio przed wykonaniem rozkazu POP EAX rejestr ESP zawierał liczbę 0F430D78H. Na podstawie rysunku podać (w postaci liczby dziesiętnej) zawartość rejestru EAX po wykonaniu podanego wyżej rozkazu.
+
+ODP.: EAX = 00000000000000000000001000000000b
+
+13. W jaki sposób można zapisać na stosie daną 8-bitową znajdującą się w rejestrze CH nie wykorzystując bezpośrednio rozkazu PUSH ?
+
+ODP.: MOV [ESP], CH
+lub 
+    SUB ESP, 1
+    MOV [ESP], CH
+
+14. Podać zawartość rejestru EAX po wykonaniu poniższego kodu.
+mov ecx,3
+mov eax,0
+petla: sub ecx,1
+add eax,1
+cmp ecx,0 -> wszystkie flagi 0
+or eax,eax -> CF = 0
+jc petla -> nie skacze
+ODP.: EAX = 00000001h
