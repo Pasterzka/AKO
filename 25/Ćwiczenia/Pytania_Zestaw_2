@@ -24,15 +24,20 @@ znak po konwersji: D83D DE0Eh
 
 ODP.: Pamięć:
     27 D8
-    29 3D
-    2B DE
-    2D 0E
-    2F 00
-    31 00
+    28 3D
+    29 DE
+    2a 0E
+    2b 00
+    3c 00
 
 4. Podać przykład rozkazu, w którym adres efektywny jest mniejszy od zawartości pola adresowego.
 
-ODP.: mov eax, [ebx+esi-10]
+
+ODP.:
+mov ebx, 0fffffff0h
+mov eax, [ebx+10000]
+
+
 
 5. Czym różni się działanie poniższych instrukcji
 mov ebx, OFFSET table+4
@@ -51,17 +56,18 @@ ODP.: Ponieważ CMP wykonuje odejmowanie dwóch operandów, a następnie ustawia
 ODP.: Nadmiar w operacjach na liczbach bez znaku sygnalizuje flaga CF (Carry Flag), natomiast w operacjach na liczbach ze znakiem — flaga OF (Overflow Flag).
     CF = 1 → wystąpiło przeniesienie poza najstarszy bit (przepełnienie przy liczbach bez znaku).
     OF = 1 → wynik ma błędny znak (przepełnienie przy liczbach ze znakiem).
+    ZF = 1 → wynik jest równy zero.
 
 8.W wyniku wykonania poniższego fragmentu programu, jeśli rejestr EDI będzie zawierał liczbę 0 lub 16, to nastąpi skok do miejsca programu opatrzonego etykietą zero_szesn,:
 TEST EDI, ...
 JZ zero_szesn
 Podać drugi argument rozkazu TEST (rozkaz TEST działa podobnie do AND, ale nie wpisuje bitowego iloczynu logicznego do podanego operandu).
 
-ODP,: TEST EDI, 0F0h
+ODP,: TEST EDI, 0FFFFFFEFh
 
 9. Jaki rodzaj adresowania należy wybrać w sytuacji gdy adres danej, na której będzie wykonane działanie, będzie znany dopiero podczas wykonywania programu?
 
-ODP.: Adresowanie pośrednie lub indeksowe (indirect or indexed addressing). -> rejestry bazowe lub indeksowe
+ODP.: Indeksowe, bazowo Indeksowe
 
 10.Podać postać rozkazu, który zaneguje starsze bity rejestru EDI o numerach 31  16, natomiast bity o numerach 15  0 pozostaną niezmienione.
 
@@ -73,13 +79,13 @@ ODP.: W procesorach x86 jest to przerwanie sprzętowe typu 0, generowane automat
 
 12. Bezpośrednio przed wykonaniem rozkazu POP EAX rejestr ESP zawierał liczbę 0F430D78H. Na podstawie rysunku podać (w postaci liczby dziesiętnej) zawartość rejestru EAX po wykonaniu podanego wyżej rozkazu.
 
-ODP.: EAX = 00000000000000000000001000000000b
-
+ODP.: EAX = 0000 0000 0000 0000 0000 0010 0000 0000b
+            00   00   02   00h    
 13. W jaki sposób można zapisać na stosie daną 8-bitową znajdującą się w rejestrze CH nie wykorzystując bezpośrednio rozkazu PUSH ?
 
 ODP.: MOV [ESP], CH
 lub 
-    SUB ESP, 1
+    SUB ESP, 4
     MOV [ESP], CH
 
 14. Podać zawartość rejestru EAX po wykonaniu poniższego kodu.
@@ -91,3 +97,10 @@ cmp ecx,0 -> wszystkie flagi 0
 or eax,eax -> CF = 0
 jc petla -> nie skacze
 ODP.: EAX = 00000001h
+
+
+15.Skok do EIP za pomocą JMP
+ 
+ODP.:   mov ebx,237
+        jmp ebx
+    Uzycie któreś z instrukcji sterującej
