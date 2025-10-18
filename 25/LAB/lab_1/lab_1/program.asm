@@ -62,36 +62,48 @@ funkcja	PROC
 		and		ah, 11000000b
 		cmp		ah, 10000000b
 		je		utf_blad
+	
+		; --- sprawdzenie czy 1-bajt ---
+		test    al, 10000000b
+		jz      bajt_jeden
 		
-		; --- sprawdzenie czy 2-bajty ---
-		mov		ah, al
-		and		ah, 11100000b
-		cmp		ah, 11000000b
-		je		bajt_dwa
+		; --- sprawdzenie 2-bajt ---
+		mov 	ah, al
+		cmp		ah, 0c2h
+		jb		utf_blad
+		cmp		ah, 0dfh
+		jbe		bajt_dwa
 
-		; --- sprawdzenie czy 3-bajty ---
-		mov		ah, al
-		and		ah, 11110000b
-		cmp		ah, 11100000b
-		je		bajt_trzy
+		; --- sprawdzenie 3-bajt ---
+		mov 	ah, al
+		cmp		ah, 0e0h
+		jb		utf_blad
+		cmp		ah, 0efh
+		jbe		bajt_trzy
 
-		; --- sprawdzenie czy 4-bajty ---
-		mov		ah, al
-		and		ah, 11111000b
-		cmp		ah, 11110000b
-		je		bajt_cztery
+		; --- sprawdzenie 4-bajt ---
+		mov 	ah, al
+		cmp		ah, 0f0h
+		jb		utf_blad
+		cmp		ah, 0f7h
+		jbe		bajt_cztery
 
-		; --- sprawdzenie czy 5-bajty ---
-		mov		ah, al
-		and		ah, 11111100b
-		cmp		ah, 11111000b
-		je		bajt_piec
+		; --- sprawdzenie 5-bajt ---
+		mov 	ah, al
+		cmp		ah, 0f8h
+		jb		utf_blad
+		cmp		ah, 0fBh
+		jbe		bajt_piec
 
-		; --- sprawdzenie czy 6-bajty ---
-		mov		ah, al
-		and		ah, 11111110b
-		cmp		ah, 11111100b
-		je		bajt_szesc
+		; --- sprawdzenie 6-bajt ---
+		mov 	ah, al
+		cmp		ah, 0fch
+		jb		utf_blad
+		cmp		ah, 0fdh
+		jbe		bajt_szesc
+
+
+		jmp		utf_blad
 						
 			bajt_jeden:
 				dec		ecx
@@ -99,201 +111,91 @@ funkcja	PROC
 				jmp		nastepny_bajt
 
 			bajt_dwa:
-				dec		ecx
-				inc		esi
+				cmp		ecx, 2			; sprawdzenie czy znak nie przekracza rozmiaru
+				jb		utf_blad
 
-				cmp		ecx, 0			; sprawdzenie czy znak nie przekracza rozmiaru
-				je		utf_blad
 
-				mov		al,[esi]		
-				and		al, 11000000b
-				cmp		al, 10000000b	; sprawdzenie czy bajt zaczyna siê 110xxxxx
-				jnz		utf_blad
-				
-				dec		ecx
-				inc		esi
-				jmp		nastepny_bajt
+				mov     al, [esi+1]
+				and     al, 11000000b
+				cmp     al, 10000000b
+				jne     utf_blad
+
+				add     esi, 2
+				sub     ecx, 2
+				jmp     nastepny_bajt
 
 			bajt_trzy:
-				dec		ecx
-				inc		esi
+				cmp     ecx, 3			; sprawdzenie czy znak nie przekracza rozmiaru
+				jb      utf_blad
 
-				cmp		ecx, 0			; sprawdzenie czy znak nie przekracza rozmiaru
-				je		utf_blad
+				mov     al, [esi+1]		; sprawdzenie czy znak zaczyna siê 10xxxxxx
+				and     al, 11000000b
+				cmp     al, 10000000b
+				jne     utf_blad
 
-				mov		al,[esi]		; sprawdzenie czy znak zaczyna siê 10xxxxxx
-				and		al, 11000000b
-				cmp		al, 10000000b
-				jne		utf_blad
+				mov     al, [esi+2]		; sprawdzenie czy znak zaczyna siê 10xxxxxx
+				and     al, 11000000b
+				cmp     al, 10000000b
+				jne     utf_blad
 
-				dec		ecx
-				inc		esi
-				
-				cmp		ecx, 0			; sprawdzenie czy znak nie przekracza rozmiaru
-				je		utf_blad
-
-				mov		al, [esi]		; sprwadzenie 
-				and		al, 11000000b
-				cmp		al, 10000000b
-				jne		utf_blad
-
-				dec		ecx
-				inc		esi
-				jmp		nastepny_bajt
+				add     esi, 3
+				sub     ecx, 3
+				jmp     nastepny_bajt
 
 			bajt_cztery:
 				
-				dec		ecx
-				inc		esi
+				cmp     ecx, 4			; sprawdzenie czy znak nie przekracza rozmiaru
+				jb      utf_blad
 
-				cmp		ecx, 0			; sprawdzenie czy znak nie przekracza rozmiaru
-				je		utf_blad
+				mov     ebx, 3
+				sprawdz4:				; sprawdzenie czy znak zaczyna siê 10xxxxxx
+					mov     al, [esi+ebx]
+					and     al, 11000000b
+					cmp     al, 10000000b
+					jne     utf_blad
+					dec     ebx
+					jnz     sprawdz4
 
-				mov		al,[esi]		; sprawdzenie czy znak zaczyna siê 10xxxxxx
-				and		al, 11000000b
-				cmp		al, 10000000b
-				jne		utf_blad
+				add     esi, 4
+				sub     ecx, 4
+				jmp     nastepny_bajt
 
-				dec		ecx
-				inc		esi
-				
-				cmp		ecx, 0			; sprawdzenie czy znak nie przekracza rozmiaru
-				je		utf_blad
-
-				mov		al, [esi]		; sprwadzenie 
-				and		al, 11000000b
-				cmp		al, 10000000b
-				jne		utf_blad
-
-				dec		ecx
-				inc		esi
-
-				cmp		ecx, 0			; sprawdzenie czy znak nie przekracza rozmiaru
-				je		utf_blad
-
-				mov		al,[esi]		; sprawdzenie czy znak zaczyna siê 10xxxxxx
-				and		al, 11000000b
-				cmp		al, 10000000b
-				jne		utf_blad
-
-				dec		ecx
-				inc		esi
-				jmp		nastepny_bajt
-			
 			bajt_piec:
 				
-				dec		ecx
-				inc		esi
+				cmp     ecx, 5			; sprawdzenie czy znak nie przekracza rozmiaru
+				jb      utf_blad
 
-				cmp		ecx, 0			; sprawdzenie czy znak nie przekracza rozmiaru
-				je		utf_blad
+				mov     ebx, 4			; sprawdzenie czy znak zaczyna siê 10xxxxxx
+				sprawdz5:
+					mov     al, [esi+ebx]
+					and     al, 11000000b
+					cmp     al, 10000000b
+					jne     utf_blad
+					dec     ebx
+					jnz     sprawdz5
 
-				mov		al,[esi]		; sprawdzenie czy znak zaczyna siê 10xxxxxx
-				and		al, 11000000b
-				cmp		al, 10000000b
-				jne		utf_blad
-
-				dec		ecx
-				inc		esi
-				
-				cmp		ecx, 0			; sprawdzenie czy znak nie przekracza rozmiaru
-				je		utf_blad
-
-				mov		al, [esi]		; sprwadzenie 
-				and		al, 11000000b
-				cmp		al, 10000000b
-				jne		utf_blad
-
-				dec		ecx
-				inc		esi
-
-				cmp		ecx, 0			; sprawdzenie czy znak nie przekracza rozmiaru
-				je		utf_blad
-
-				mov		al,[esi]		; sprawdzenie czy znak zaczyna siê 10xxxxxx
-				and		al, 11000000b
-				cmp		al, 10000000b
-				jne		utf_blad
-
-				dec		ecx
-				inc		esi
-
-				cmp		ecx, 0			; sprawdzenie czy znak nie przekracza rozmiaru
-				je		utf_blad
-
-				mov		al,[esi]		; sprawdzenie czy znak zaczyna siê 10xxxxxx
-				and		al, 11000000b
-				cmp		al, 10000000b
-				jne		utf_blad
-
-				dec		ecx
-				inc		esi
-				jmp		nastepny_bajt
-
+				add     esi, 5
+				sub     ecx, 5
+				jmp     nastepny_bajt
 
 			bajt_szesc:
+
+				cmp     ecx, 6				; sprawdzenie czy znak nie przekracza rozmiaru
+				jb      utf_blad
+
+				mov     ebx, 5
+				sprawdz6:
 				
-				dec		ecx
-				inc		esi
+					mov     al, [esi+ebx]
+					and     al, 11000000b
+					cmp     al, 10000000b
+					jne     utf_blad
+					dec     ebx
+					jnz     sprawdz6
 
-				cmp		ecx, 0			; sprawdzenie czy znak nie przekracza rozmiaru
-				je		utf_blad
-
-				mov		al,[esi]		; sprawdzenie czy znak zaczyna siê 10xxxxxx
-				and		al, 11000000b
-				cmp		al, 10000000b
-				jne		utf_blad
-
-				dec		ecx
-				inc		esi
-				
-				cmp		ecx, 0			; sprawdzenie czy znak nie przekracza rozmiaru
-				je		utf_blad
-
-				mov		al, [esi]		; sprwadzenie 
-				and		al, 11000000b
-				cmp		al, 10000000b
-				jne		utf_blad
-
-				dec		ecx
-				inc		esi
-
-				cmp		ecx, 0			; sprawdzenie czy znak nie przekracza rozmiaru
-				je		utf_blad
-
-				mov		al,[esi]		; sprawdzenie czy znak zaczyna siê 10xxxxxx
-				and		al, 11000000b
-				cmp		al, 10000000b
-				jne		utf_blad
-
-				dec		ecx
-				inc		esi
-
-				cmp		ecx, 0			; sprawdzenie czy znak nie przekracza rozmiaru
-				je		utf_blad
-
-				mov		al,[esi]		; sprawdzenie czy znak zaczyna siê 10xxxxxx
-				and		al, 11000000b
-				cmp		al, 10000000b
-				jne		utf_blad
-
-				dec		ecx
-				inc		esi
-
-				cmp		ecx, 0			; sprawdzenie czy znak nie przekracza rozmiaru
-				je		utf_blad
-
-				mov		al,[esi]		; sprawdzenie czy znak zaczyna siê 10xxxxxx
-				and		al, 11000000b
-				cmp		al, 10000000b
-				jne		utf_blad
-
-				dec		ecx
-				inc		esi
-				jmp		nastepny_bajt
-
-
-	
+				add     esi, 6
+				sub     ecx, 6
+				jmp     nastepny_bajt
 
 	utf_blad:
 		push	0
