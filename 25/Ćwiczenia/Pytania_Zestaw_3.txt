@@ -1,0 +1,171 @@
+1. W niektórych architekturach procesorów modyfikacjom adresowym towarzyszy autoinkrementacja — jak to zrealizować w architekturze IA–32 ?
+
+ODP.:
+    CLD
+    mov ecx,10
+    movsb
+
+    mov al,[ebx+esi]
+    add esi
+
+2. Wyjaśnić za pomocą rysunku mechanizm adresowania bezpośredniego.
+
+ODP.:
+
+    PROCESOR                            PAMIĘĆ
+
+    Wskaźnik instrukcji                 Kod operacji + argument w pamięci
+
+                                            x
+                                            x
+                                            x
+                                            x
+
+                                        argument
+
+3. W jakiej sytuacji, w trakcie wykonywania rozkazu sterującego (skoku), procesor ignoruje zawartość pola adresowego tego rozkazu?
+
+ODP.: Kiedy warunek skoku jest niespełniony
+
+4. W rejestrach RDX:RAX znajduje się liczba binarna 128-bitowa. Napisać fragment programu w asemblerze, który zwiększy tę liczbę o 1.
+
+ODP.:
+    add RAX,1
+    adc RDX,0
+
+5. Dlaczego rozkaz DIV EDX powoduje zawsze wygenerowanie wyjątku procesora?
+
+ODP.: 
+    Poniewaz gdy edx=0 to będziemy mieli błąd dzielenia przez 0, a kiedy edx!=0 to wynik dzielenia będzie zawsze większy niz 32-bity
+
+6. Dlaczego procesor w trakcie wykonywania rozkazu dodawania ADD ustawia jednocześnie dwa znaczniki nadmiaru CF i OF ?
+
+ODP.:
+    CF jest ustawiany gdy wystąpi przeniesienie poza zakres liczby bez znaku
+    OF jest ustawiany gdy wystąpi przeniesienie poza zakres liczby ze znakiem
+
+7 Określić zawartości znaczników OF, ZF i CF po wykonaniu podanego niżej fragmentu programu.
+
+    xor eax, eax
+    sub eax, 0FFFFFFFFH
+
+ODP.:
+    0x00000000 - 0xFFFFFFFF = 0x00000001
+    OF = 0
+    ZF = 0
+    CF = 1
+
+8. Podaj wartość znacznika OF po wykonaniu rozkazów
+    
+    mov ax,8000h
+    shl ax,1
+
+ODP.:
+    1000000000000000b przed
+    0000000000000000b po
+
+    0x8000h << 1 = 0x0000h
+    OF = 1
+
+9. Jakie wady ma użycie rejestru ESP zamiast EBP w operacjach pobierania parametrów podprogramu umieszczonych na stosie? Zilustruj odpowiednimi przykładami.
+
+ODP.:
+    Użycie rejestru ESP zamiast EBP w operacjach pobierania parametrów podprogramu umieszczonych na stosie ma kilka wad:
+
+    1. Trudności w dostępie do parametrów:
+       - EBP jest używany jako wskaźnik ramki stosu, co ułatwia dostęp do parametrów i zmiennych lokalnych.
+       - ESP zmienia się podczas operacji na stosie (np. PUSH, POP), co może utrudnić dostęp do parametrów.
+
+    2. Problemy z zachowaniem konwencji wywołań:
+       - Wiele konwencji wywołań zakłada użycie EBP do identyfikacji ramki stosu.
+       - Użycie ESP może prowadzić do niezgodności z tymi konwencjami.
+
+    Przykład:
+    ```
+    push eax
+    push ecx
+    push edx
+    call subroutine
+    pop edx
+    pop ecx
+    pop eax
+    ```
+
+    W powyższym przykładzie, jeśli użyjemy ESP do dostępu do parametrów, musielibyśmy ręcznie obliczać ich adresy, co jest bardziej podatne na błędy.
+
+10. Opisać technikę przydzielania pamięci i dostępu do zmiennych dynamicznych ulokowanych na stosie.
+
+ODP.:
+    Technika dynamicznego przydzielania pamięci i dostępu polega na rezerwowaniu określonej ilości pamięci na stosie podczas wykonywania programu. Proces ten obejmuje następujące kroki:
+    1. Rezerwacja pamięci:
+       - Użycie instrukcji SUB na rejestrze ESP w celu zmniejszenia jego wartości, co rezerwuje miejsce na stosie dla zmiennych dynamicznych.
+       - Przykład: `sub esp, 16` rezerwuje 16 bajtów na stosie.
+    2. Dostęp do zmiennych:
+       - Zmienne dynamiczne są dostępne poprzez wskaźnik ESP lub EBP.
+       - Przykład: `mov eax, [esp]` odczytuje wartość pierwszej zmiennej dynamicznej.
+    3. Zwolnienie pamięci:
+       - Po zakończeniu korzystania z dynamicznych zmiennych, należy przywrócić wartość ESP do poprzedniego stanu za pomocą instrukcji ADD.
+       - Przykład: `add esp, 16` zwalnia wcześniej zarezerwowane miejsce na stosie
+
+11. Wyjaśnić czym się różnią się rozkazy push ebx i push [ebx].
+
+ODP.:
+    - push ebx - ten rozkaz umieszcza wartość rejestru EBX na stosie.
+    - push [ebx] - ten rozkaz umieszcza wartość znajdującą się pod adresem wskazywanym przez EBX na stosie.
+
+12. Na czym polega błąd w poniższym fragmencie programu?
+
+    v2 dw ?
+    – – – – – – – – – – – –
+    mov v2, 11111H
+
+ODP.: 
+    Błąd polega na tym, że instrukcja MOV nie może bezpośrednio przypisać wartości do zmiennej zdefiniowanej w pamięci. Należy użyć instrukcji MOV z rejestrem pośredniczącym, np.:
+
+    mov ax, 11111H
+    mov v2, ax
+
+13. Określić postać komunikatu po wykonaniu poniższego fragmentu programu.
+
+    napis db 4 dup (?), 'informatyka', 0
+    — — — — — — — — — — — —
+    mov ecx, 0
+    przepisz: mov al, napis[ecx+4]
+    mov napis[ecx], al  
+    inc ecx
+    cmp ecx, 11
+    jb przepisz
+    push 0
+    lea eax, napis[3]
+    push eax
+    push OFFSET napis
+    push 0
+    call _MessageBoxA@16
+
+ODP.:
+
+    petla:
+    1. napis -> i???informatyka0
+    2. napis -> in??informatyka0
+    3. napis -> inf?informatyka0
+    4. napis -> infoinformatyka0
+    5. napis -> infornformatyka0
+    6. napis -> informformatyka0
+    7. napis -> informaormatyka0
+    8. napis -> informatrmatyka0
+    9. napis -> informatymatyka0
+    10. napis ->informatykatyka0
+
+    Komunikat wyświetlony w oknie MessageBoxA to "informatykatyka", a tytuł to "ormatykatyka"
+
+14. Podać liczbę, która zostanie wyświetlona na ekranie w wyniku wykonania poniższego fragmentu programu. Podprogram wyswietl32 wyświetla na ekranie w postaci dziesiętnej liczbę binarną zawartą w rejestrze EAX.
+    
+    pxy db 63, 64, 65
+    — — — — — — — —
+    mov eax, 0
+    mov ax, word PTR pxy + 1
+    call wyswietl32
+
+    ODP.:
+    AX = 4140h
+    EAX = 00004140h = 16704 DEC = 0000 0000 0000 0000 0100 0001 0100 0000 BIN
