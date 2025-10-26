@@ -1,3 +1,6 @@
+NASTĘPNE ZAJĘCIA 234NE!!!
+
+
 1. W niektórych architekturach procesorów modyfikacjom adresowym towarzyszy autoinkrementacja — jak to zrealizować w architekturze IA–32 ?
 
 ODP.:
@@ -5,8 +8,13 @@ ODP.:
     mov ecx,10
     movsb
 
-    mov al,[ebx+esi]
-    add esi
+    add r1,[r2]+
+
+    add eax, [ebx]
+    add ebx, 4
+
+    nie ma w x86, ukryta jest w operacjach blokowych -> nie ma takiego trybu
+
 
 2. Wyjaśnić za pomocą rysunku mechanizm adresowania bezpośredniego.
 
@@ -23,26 +31,57 @@ ODP.:
 
                                         argument
 
+    przykład:
+        mov eax,[1234h]
+
+    ESP -> mozna normalnie modyfikowac
+    EIP -> tylko porzez rozkazy sterujące
+
+    przykład:
+        mov esp, liczba
+        przy liczba equ jest natychmiastowe, a przy liczba dd jest bezpośrednie
+
+    przykład:
+        mov esp,[liczba] <- pole adresowe <- liczba która jest tam dopisywana
+
+    bajt sib <- pole adresowe
+
 3. W jakiej sytuacji, w trakcie wykonywania rozkazu sterującego (skoku), procesor ignoruje zawartość pola adresowego tego rozkazu?
 
-ODP.: Kiedy warunek skoku jest niespełniony
+ODP.: Kiedy warunek skoku jest niespełniony -> skoki warunkowe
+
+    rozkaz jest atomowy -> rozkaz rozpoczęty, rozkaz zakończony
+
+    semafor:
+        a db 1
+
+        mov al, 0
+        xchg al,a
 
 4. W rejestrach RDX:RAX znajduje się liczba binarna 128-bitowa. Napisać fragment programu w asemblerze, który zwiększy tę liczbę o 1.
 
 ODP.:
-    add RAX,1
-    adc RDX,0
+    add RAX, 1
+    adc RDX, 0
+
+    shr eax,2 -> nie wiadomo co jest w cf
+    shr eax,1 -> w eax jest bit, który wypada
 
 5. Dlaczego rozkaz DIV EDX powoduje zawsze wygenerowanie wyjątku procesora?
 
 ODP.: 
     Poniewaz gdy edx=0 to będziemy mieli błąd dzielenia przez 0, a kiedy edx!=0 to wynik dzielenia będzie zawsze większy niz 32-bity
 
+    nadmiar -> nie mieści się w rejestrze
+
 6. Dlaczego procesor w trakcie wykonywania rozkazu dodawania ADD ustawia jednocześnie dwa znaczniki nadmiaru CF i OF ?
 
 ODP.:
+    add działa na obu formatach danych więc procesor sygnalizuje programiście jaką operacje ma wykonać
     CF jest ustawiany gdy wystąpi przeniesienie poza zakres liczby bez znaku
     OF jest ustawiany gdy wystąpi przeniesienie poza zakres liczby ze znakiem
+
+    dla mnozenia i dzielenia są odzielne instrukcje dla liczb dodatnich i ujemnych
 
 7 Określić zawartości znaczników OF, ZF i CF po wykonaniu podanego niżej fragmentu programu.
 
@@ -66,6 +105,8 @@ ODP.:
 
     0x8000h << 1 = 0x0000h
     OF = 1
+
+    przy shl, 2 -> nie jesteśmy w stanie określić co tam jest
 
 9. Jakie wady ma użycie rejestru ESP zamiast EBP w operacjach pobierania parametrów podprogramu umieszczonych na stosie? Zilustruj odpowiednimi przykładami.
 
@@ -93,6 +134,14 @@ ODP.:
 
     W powyższym przykładzie, jeśli użyjemy ESP do dostępu do parametrów, musielibyśmy ręcznie obliczać ich adresy, co jest bardziej podatne na błędy.
 
+
+    push EBP
+    mov ebp,esp
+    sub esb
+
+    -> po tym wiemy jak gdzie jest funkcja
+
+    
 10. Opisać technikę przydzielania pamięci i dostępu do zmiennych dynamicznych ulokowanych na stosie.
 
 ODP.:
@@ -107,6 +156,21 @@ ODP.:
        - Po zakończeniu korzystania z dynamicznych zmiennych, należy przywrócić wartość ESP do poprzedniego stanu za pomocą instrukcji ADD.
        - Przykład: `add esp, 16` zwalnia wcześniej zarezerwowane miejsce na stosie
 
+    to co jest z plusem to jest przekazywane do funkcji, a to co jest w funkcji to jest z minusem
+
+
+    dodatek:
+        działa
+        mov eax,[ebp-4]
+    
+        ale
+        lea esi,[ebp-4]
+        mov eax,[esi]
+
+        lepsza praktyka
+
+=======================
+
 11. Wyjaśnić czym się różnią się rozkazy push ebx i push [ebx].
 
 ODP.:
@@ -120,10 +184,7 @@ ODP.:
     mov v2, 11111H
 
 ODP.: 
-    Błąd polega na tym, że instrukcja MOV nie może bezpośrednio przypisać wartości do zmiennej zdefiniowanej w pamięci. Należy użyć instrukcji MOV z rejestrem pośredniczącym, np.:
-
-    mov ax, 11111H
-    mov v2, ax
+    Wartość 11111H jest za duza dla zmiennej v2
 
 13. Określić postać komunikatu po wykonaniu poniższego fragmentu programu.
 
