@@ -1,0 +1,160 @@
+1. Na czym polega błąd w podanym niżej zapisie rozkazu
+    .data
+        Wynik dd 0
+    .code
+        mov edx, offset Wynik
+        mov wynik, dword PTR [edx]
+
+    ODP.: Błąd polega na tym, że próbujesz użyć etykiety (Wynik) jako celu zapisu w instrukcji mov, zamiast rejestru lub adresu pamięci.
+
+
+2. Jaką rolę w trakcie asemblacji programów pełni licznik lokacji?
+
+    ODP.: Licznik lokacji to wewnętrzny rejestr asemblera, który wskazuje adres pamięci, pod który zostanie umieszczony następny rozkaz lub dane programu. W trakcie asemblacji jest automatycznie zwiększany po każdej zdefiniowanej instrukcji lub elemencie danych, umożliwiając przypisywanie adresów etykietom.
+
+3. Jaką rolę w trakcie asemblacji programów pełni słownik symboli?
+
+    ODP.: Słownik symboli to tabela tworzona przez asembler, w której zapisywane są nazwy symboli (np. etykiet i zmiennych) wraz z ich adresami lub wartościami. Umożliwia on późniejsze zastępowanie nazw symboli odpowiednimi adresami podczas generowania kodu maszynowego.
+
+4. Poniższy fragment programu może służyć do rezerwacji obszaru pamięci na dane o nieokreślonych wartościach początkowych. Podać równoważną deklarację tego obszaru używając dyrektywy dd. 
+    obroty LABEL dword
+    ORG $ + 28
+
+    ODP.: 
+        obroty dd 7 dup(?)
+
+        lub na stos:
+            mov ebp, esp
+            sub esp, 28
+            lea esi, [ebp]
+
+5. Omówić znaczenie terminu: interfejs ABI.
+
+    ODP.: ABI (Application Binary Interface) to interfejs binarny aplikacji, który określa zasady współpracy pomiędzy programami i systemem operacyjnym na poziomie kodu maszynowego.
+    Definiuje m.in. sposób wywoływania funkcji, przekazywania argumentów, rozmieszczenia danych w pamięci oraz format plików wykonywalnych, zapewniając zgodność binarną między różnymi modułami programu.
+
+6. Omówić sposób wywoływania usług systemowych za pomocą rozkazu INT, stosowany m.in. w systemie Linux i Windows(DOS).
+
+    ODP.: PWywołanie usług systemowych za pomocą rozkazu INT polega na wywołaniu przerwania programowego, które przenosi sterowanie do kodu obsługi systemu operacyjnego.
+
+    W DOS/Windows 16-bit używano np. INT 21h, gdzie w rejestrach CPU określano numer funkcji i argumenty, a po wykonaniu przerwania wyniki były zwracane w rejestrach.
+
+    W Linux (x86) stosuje się INT 0x80 lub nowocześniej syscall, gdzie w rejestrach (np. eax, ebx, ecx) podaje się numer wywoływanej funkcji systemowej i parametry; system przerywa działanie programu, wykonuje usługę i zwraca wynik w rejestrze.
+
+    Mechanizm ten umożliwia bezpieczne przejście z trybu użytkownika do trybu jądra, pozwalając programowi korzystać z funkcji systemowych, takich jak operacje na plikach, alokacja pamięci czy obsługa urządzeń.
+
+7. Omówić na przykładzie zastosowanie symbolu $ reprezentującego zawartość licznika lokacji w trakcie asemblacji programu.
+
+    ODP.: Symbol $ w asemblerze oznacza bieżącą wartość licznika lokacji, czyli adres, pod którym znajduje się aktualnie przetwarzana instrukcja lub dane.
+
+    .data
+        komunikat db 'Hello, world!', 0
+        dlugosc  equ $ - komunikat
+
+    komunikat wskazuje początek łańcucha znaków.
+    $ w wyrażeniu $ - komunikat oznacza adres końca tego łańcucha (po znaku 0).
+    dlugosc zostaje obliczona jako ilość bajtów między początkiem a końcem łańcucha, czyli długość napisu.
+
+    Dzięki temu można dynamicznie obliczać rozmiary danych w trakcie asemblacji, bez ręcznego liczenia bajtów.
+
+8. W jaki sposób można wywołać funkcje zdefiniowane w Win32API na poziomie kodu asemblerowego?
+
+    ODP.: W asemblerze pod systemem Win32 funkcje API wywołuje się, korzystając z ustalonego konwencji wywołań
+    Konwecnaja ta mówi w jakiej kolejności ładowane są na stos argumenty oraz kto odpowiada za "czyszczenie stosu".
+
+9. Wyjaśnić znaczenie terminu API.
+
+    ODP.: API (Application Programming Interface) to zestaw funkcji, procedur, struktur danych i zasad, które umożliwiają programom korzystanie z usług innego programu lub systemu operacyjnego. Umożliwia to komunikację między aplikacjami a bibliotekami lub systemem, bez konieczności znajomości wewnętrznej implementacji tych usług.
+
+
+10. Poniżej podano sekwencję dwóch rozkazów. Napisać równoważny ciąg rozkazów, w którym nie wystąpi rozkaz sete.
+    cmp dx, si
+    sete al
+
+    ODP.:
+        mov al, 0        
+        cmp dx, si       
+        je  ustaw 
+        jmp koniec
+        ustaw:
+        mov al, 1        
+        koniec:
+
+11. W jaki sposób można zapisać na stosie daną 8-bitową znajdującą się w rejestrze CL ?
+
+    ODP.: 
+    movzx eax,CL
+    push eax
+
+    lub
+    sub esp,4
+    mov [esp], cl
+
+12. Co oznacza termin wyrażenie arytmetyczne czasu translacji? Podaj przykład takiegowyrażenia.
+
+    ODP.: Wyrażenie arytmetyczne czasu translacji (ang. assembly-time arithmetic expression) to wyrażenie obliczane przez asembler podczas asemblacji programu, a nie w trakcie jego wykonywania. Pozwala na określenie wartości stałych, adresów, przesunięć lub rozmiarów danych przed wygenerowaniem kodu maszynowego.
+
+    przykład zadanie 7
+
+13. Dany jest podprogram wyrażony w postaci podanego niżej kodu:
+    _oblicz PROC
+        push ebp
+        mov ebp,esp
+        mov eax,[ebp+8]
+        fld qword ptr [eax]
+        mov eax,[ebp+12]
+        fdiv qword ptr [eax]
+        pop ebp
+        ret
+    _oblicz ENDP
+
+    Na podstawie analizy kodu podprogramu podaj nagłówek funkcji oblicz, wiedząc, że jest ona zgodna z konwencją wywołania C.
+
+    ODP.: double oblicz(double zmienna1, double zmienna2)
+        * jednak bym bardziej zastanawiał się nad float
+
+14. Podany poniżej podprogram dodaj sumuje dwie liczby 32-bitowe umieszczone bezpośrednio za rozkazem call, który wywołuje ten podprogram. Obliczona suma pozostawiana jest w rejestrze EAX.
+    dodaj PROC
+        mov esi, [esp]
+        mov eax, [esi]
+        add eax, [esi+4]
+        ret
+    dodaj ENDP
+
+    Przykładowe wywołanie podprogramu może mieć postać:
+    call dodaj
+    dd 5
+    dd 7
+    jmp ciag_dalszy
+
+    Wyjaśnić dlaczego wywołanie podanego podprogramu może spowodować bliżej nieokreślone działania procesora, prowadzące do błędu wykonania programu? Następnie, do podanego kodu podprogramu wprowadzić dodatkowe rozkazy, które wyeliminują ww. błędne działania.
+
+    ODP.: Program po wykonaniu instrukcji call na stosie zapisuje adres powrotu, następnie przypisuje do esi wartość tego porwortu i prubuje w dalszej części kodu odwołać się do nie zainicjalizowanej wartości pamięci
+    Program nie widzi dd 5 i dd 7.
+
+    Poprawnie:
+    dodaj PROC
+        mov esi, [esp]
+        mov eax, [esi]
+        add eax, [esi+4]
+        ret
+    dodaj ENDP
+
+    push 5
+    push 7
+    call dodaj
+    add esp, 8
+    jmp ciag_dalszy
+
+    lub
+    dodaj PROC
+        mov esi, [esp]
+        mov eax, [esi]
+        add eax, [esi+4]
+        ret 8
+    dodaj ENDP
+
+    push 5
+    push 7
+    call dodaj
+    jmp ciag_dalszy
