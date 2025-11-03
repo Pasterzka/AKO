@@ -3,18 +3,33 @@
         Wynik dd 0
     .code
         mov edx, offset Wynik
-        mov wynik, dword PTR [edx]
+        mov wynik, edx
 
     ODP.: Błąd polega na tym, że próbujesz użyć etykiety (Wynik) jako celu zapisu w instrukcji mov, zamiast rejestru lub adresu pamięci.
+
+    Dwa odwołania do pamięci w jednej linijces
+
+    mov eax, dwor ptx [edx]
+    mov wynik, eax
+
+    kiedy będzie problem? -> assembler ma ustawienie rozrózniania wielkich i małych liter
 
 
 2. Jaką rolę w trakcie asemblacji programów pełni licznik lokacji?
 
     ODP.: Licznik lokacji to wewnętrzny rejestr asemblera, który wskazuje adres pamięci, pod który zostanie umieszczony następny rozkaz lub dane programu. W trakcie asemblacji jest automatycznie zwiększany po każdej zdefiniowanej instrukcji lub elemencie danych, umożliwiając przypisywanie adresów etykietom.
 
+    wykład 2 slajd 145*
+
+    stosowany aby rezerować albo sprawdzić wielkość obszaru danych
+
+    wskazuje miejsce w pamięci względem początku segmentu gdzie zapisana będzie dana lub instrukcja
+
 3. Jaką rolę w trakcie asemblacji programów pełni słownik symboli?
 
     ODP.: Słownik symboli to tabela tworzona przez asembler, w której zapisywane są nazwy symboli (np. etykiet i zmiennych) wraz z ich adresami lub wartościami. Umożliwia on późniejsze zastępowanie nazw symboli odpowiednimi adresami podczas generowania kodu maszynowego.
+
+    słownik danych
 
 4. Poniższy fragment programu może służyć do rezerwacji obszaru pamięci na dane o nieokreślonych wartościach początkowych. Podać równoważną deklarację tego obszaru używając dyrektywy dd. 
     obroty LABEL dword
@@ -43,6 +58,10 @@
 
     Mechanizm ten umożliwia bezpieczne przejście z trybu użytkownika do trybu jądra, pozwalając programowi korzystać z funkcji systemowych, takich jak operacje na plikach, alokacja pamięci czy obsługa urządzeń.
 
+    POPORAWIONE DOBRZE:
+    KOD JEST DOSTĘPNY NA POZIOMIE SYSTEMU OPERACYJNEGO
+    wywołanie funkcji systemowych działa na zasadzie ustawienia rejestru eax (lub pochodnych) ustawienie numeru funkcji, a następnie int 21h, reszta parametrów ebx ecx itp -> TO JEST ABI
+
 7. Omówić na przykładzie zastosowanie symbolu $ reprezentującego zawartość licznika lokacji w trakcie asemblacji programu.
 
     ODP.: Symbol $ w asemblerze oznacza bieżącą wartość licznika lokacji, czyli adres, pod którym znajduje się aktualnie przetwarzana instrukcja lub dane.
@@ -62,10 +81,24 @@
     ODP.: W asemblerze pod systemem Win32 funkcje API wywołuje się, korzystając z ustalonego konwencji wywołań
     Konwecnaja ta mówi w jakiej kolejności ładowane są na stos argumenty oraz kto odpowiada za "czyszczenie stosu".
 
+    PARAMETRY NA STOS, CALL A NASTĘPNIE FUNKCJA WYWOŁANA ZDEJMUJE PARAMETRY ZE STOSU
+                                                                                NIE MY
+
+    w trybie 64 bitowym domyślnie jest fast-call
+
 9. Wyjaśnić znaczenie terminu API.
 
     ODP.: API (Application Programming Interface) to zestaw funkcji, procedur, struktur danych i zasad, które umożliwiają programom korzystanie z usług innego programu lub systemu operacyjnego. Umożliwia to komunikację między aplikacjami a bibliotekami lub systemem, bez konieczności znajomości wewnętrznej implementacji tych usług.
 
+    Po co wporwadzono API i ABI?
+
+        fopen -> biblioteka (biblioteka dla języka) -> twórca kompilatora dostrcza biblioteki związane z językiem
+                                                    -> system operacyjny -> biblioteki systemowej
+
+        API - programista -> bibliotek języka
+        ABI - (biblioteka języka ->) biblioteka systemowa -> funkcje systemowe 
+
+        ntdll.dll -> mapuje funkcje na funkcje -> jest kluczowa
 
 10. Poniżej podano sekwencję dwóch rozkazów. Napisać równoważny ciąg rozkazów, w którym nie wystąpi rozkaz sete.
     cmp dx, si
@@ -96,6 +129,12 @@
 
     przykład zadanie 7
 
+    zamiana ascii, mnozenie, offset - offser
+    mov al, 'z' - 'a' + 1 -> wyrazenie translacji -> zamiana wartości na liczbę 
+                                                        NIE LEA!!!
+
+    makra to są wyrazy czasu translacji
+
 13. Dany jest podprogram wyrażony w postaci podanego niżej kodu:
     _oblicz PROC
         push ebp
@@ -110,8 +149,14 @@
 
     Na podstawie analizy kodu podprogramu podaj nagłówek funkcji oblicz, wiedząc, że jest ona zgodna z konwencją wywołania C.
 
-    ODP.: double oblicz(double zmienna1, double zmienna2)
-        * jednak bym bardziej zastanawiał się nad float
+    ODP.: double oblicz(double *zmienna1, double *zmienna2)
+        * float i double moze być bo zwracany jest z wierzchołka stosu
+
+        fild qword -> long long
+        fild dword -> int
+
+        gdyby było ret 12 -> "stdcall" double oblicz(double *a, double *b)
+                            -> dopisz wiesz ze jest stdcall
 
 14. Podany poniżej podprogram dodaj sumuje dwie liczby 32-bitowe umieszczone bezpośrednio za rozkazem call, który wywołuje ten podprogram. Obliczona suma pozostawiana jest w rejestrze EAX.
     dodaj PROC
@@ -158,3 +203,20 @@
     push 7
     call dodaj
     jmp ciag_dalszy
+
+    ODP.: dd 5 jest daną w segmencie kodu -> zostanie potraktowana jako rozkaz, a nie wiemy co jest pod instrukcją 5 (rozkaz moze nawet nie istniec)
+
+    dodaj PROC
+        mov esi, [esp]
+        mov eax, [esi]
+        add eax, [esi+4]
+        add [esp], dword ptr 8
+        ret
+    dodaj ENDP
+
+    call dodaj
+    dd 5
+    dd 7
+    jmp ciag_dalszy
+
+    
