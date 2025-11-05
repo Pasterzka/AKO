@@ -1,0 +1,184 @@
+1. W trakcie obserwacji działania fragmentu programu, w którym nie występują rozkazy skoku zauważono, że zmiany wskaźnika instrukcji (licznika rozkazów) EIP przebiegają w sposób pokazany narysunku. Naszkicować analogiczny wykres dla poniższego fragmentu programu:
+    mov ecx, 2
+    ptl: add ah, [ebx]
+        inc ebx
+        loop ptl
+    nop
+
+    ODP.:
+
+    EIP Rośnie jak na wykresie obok bo pętla wykona się tylko rozkazy
+    W przyadku gdyby ecx większe od 2 to wykres miałby skoki w górę i w dół
+
+2. Wyjaśnić znaczenie terminu ramka stosu.
+
+    ODP.: Ramka stosu (ang. stack frame) to obszar na stosie, który jest używany przez funkcję do przechowywania jej lokalnych zmiennych, parametrów oraz informacji o stanie wywołania funkcji (np. adres powrotu).
+    
+    Ramka stosu jest tworzona przy wejściu do funkcji i usuwana przy jej zakończeniu, co umożliwia zarządzanie pamięcią i organizację danych podczas wykonywania programu.
+
+3. Podaj kod w asemblerze 32-bitowym, który w rejestrze AX umieści sumę 10-tego i 15-tego elementu tablicy, jeśli tablica jest co najmniej 15-to elementowa, zaś prototyp tej funkcji w konwencji C zdefiniowano następująco:
+
+    int funkcja (int a, short int tablica[]);
+
+.code
+_funkcja PROC
+    push    ebp
+    mov     ebp, esp
+
+    xor     eax, eax
+    mov     ebx, [ebp+12] ; wskaźnik do tablicys
+
+    mov     cx, [ebx + 18] ; 10-ty element tablicy 
+    mov     dx, [ebx + 28] ; 15-ty element tablicy
+
+    add     ax, cx
+    add     ax, dx
+
+    pop     ebp
+    ret
+_funkcja ENDP
+END
+
+4. Poniżej podano fragment programu w języku C.
+    int a, b, * wsk, wynik;
+    wsk = &b;
+    a = 21; b = 25;
+    wynik = roznica(&a, &wsk);
+
+Napisać podprogram w asemblerze przystosowany do wywoływania z poziomu języka C, którego prototyp ma postać: int roznica (int * odjemna, int ** odjemnik);
+
+Podprogram ten powinien obliczyć różnicę dwóch liczb całkowitych ze znakiem w kodzie U2.
+
+.code
+_roznica PROC
+    push    ebp
+    mov     ebp, esp
+    push    ebx
+    push    ecx
+
+    mov     ebx,[ebp+8]    ; odjemna
+    mov     eax,[ebx]      ; wartość odjemnej
+
+    mov     ecx,[ebp+12]   ; odjemnik
+    mov     ecx,[ecx]      ; wskaźnik do odjemnika
+    mov     ecx,[ecx]      ; wartość odjemnika
+
+    sub     eax, ecx
+
+    pop     ecx
+    pop     ebx
+    pop     ebp
+    ret
+_roznica ENDP
+END
+
+5. Napisać podprogram w asemblerze obliczający wartość funkcji kwadrat metodą rekurencyjną korzystając z zależności:
+
+    a^2 = (a-2)^2 + 4*a -4  dla a > 1
+    a^2 = 1                 dla a = 1
+    a^2 = 0                 dla a = 0
+
+przy czym argument a jest liczbą całkowitą 32-bitową zawartą w przedziale <1, 65535>. Podprogram powinien być przystosowany do konwencji wywoływania stdcall, a jego prototyp ma postać: unsigned int kwadrat (unsigned int a);
+W podprogramie nie można używać rozkazów mnożenia i rozkazów przesunięć.
+
+.code
+_kwadrat PROC stdcall
+    push    ebp
+    mov     ebp, esp
+    push    ebx
+    push    ecx
+    push    edx
+
+    mov     eax, [ebp+8]   ; pobranie argumentu a
+
+    cmp     eax, 1
+    je      jeden
+    cmp     eax, 0
+    je      zero
+    sub     eax, 2
+    push    eax
+    call    _kwadrat
+    add     esp, 4
+
+    mov     ebx, [ebp+8]   ; ponowne pobranie a
+    shl     ebx, 2         ; obliczenie 4*a
+    sub     ebx, 4         ; obliczenie 4*a - 4
+    add     eax, ebx       ; dodanie do wyniku rekurencji
+    jmp     koniec
+
+jeden:
+    mov     eax, 1
+    jmp     koniec
+
+zero:
+    mov     eax, 0
+
+koniec:
+    pop     edx
+    pop     ecx
+    pop     ebx
+    pop     ebp
+    ret
+_kwadrat ENDP
+
+6. Napisać podprogram w asemblerze przystosowany do wywoływania z poziomu języka C, którego prototyp ma postać: unsigned int liczba_procesorow();
+
+który zwróci jako wyjście liczbę procesorów w systemie. Wskazówki: użyj funkcji GetSystemInfo.
+
+.code
+_liczba_procesorow PROC
+    push    ebp
+    mov     ebp, esp
+    sub     esp, 36         ; rezerwacja miejsca na SYSTEM_INFO
+    lea     eax, [ebp-36]   ; wskaźnik do SYSTEM_INFO
+    push    eax
+    call    GetSystemInfo
+    add     esp, 4
+    mov     eax, [ebp-20]   ; pobranie liczby procesorów z SYSTEM_INFO
+    add     esp, 36         ; zwolnienie miejsca
+    pop     ebp
+    ret
+_liczba_procesorow ENDP
+END
+
+7. Czym różni się rozkaz CALL od rozkazu INT ?
+
+    ODP.: Rozkaz CALL służy do wywoływania podprogramów (funkcji) w programie. Po wykonaniu CALL, adres powrotu jest zapisywany na stosie, a kontrola przekazywana jest do wskazanego podprogramu.
+
+    Rozkaz INT (ang. interrupt) służy do wywoływania przerwań programowych. Przerwania mogą być używane do obsługi zdarzeń sprzętowych lub programowych, takich jak błędy czy żądania systemowe. INT powoduje przejście do procedury obsługi przerwania, a także zapisuje stan procesora na stosie.
+
+    Główna różnica polega na tym, że CALL jest używany do wywoływania funkcji w ramach programu, podczas gdy INT jest używany do obsługi przerwań i może prowadzić do zmiany kontekstu wykonania programu.
+
+8. Jaką rolę w pracy komputera pełni system BIOS?
+
+    ODP.: System BIOS (Basic Input/Output System) pełni kluczową rolę w pracy komputera, ponieważ jest to podstawowe oprogramowanie układowe, które inicjalizuje i testuje sprzęt komputerowy podczas uruchamiania systemu (proces POST - Power-On Self Test). BIOS zapewnia również interfejs między systemem operacyjnym a sprzętem komputera, umożliwiając komunikację z urządzeniami wejścia/wyjścia, takimi jak klawiatura, dyski twarde czy karty graficzne.
+
+    BIOS jest odpowiedzialny za ładowanie systemu operacyjnego z nośnika danych do pamięci RAM oraz za konfigurację podstawowych ustawień sprzętowych komputera.
+
+9. Bezpośrednio po włączeniu (lub zresetowaniu) komputera procesor wykonuje zestaw programów testujących podzespoły sprzętowe — gdzie znajduje się kod tych programów?
+
+    ODP.: Kod programów testujących podzespoły sprzętowe, znanych jako POST (Power-On Self Test), znajduje się w pamięci ROM (Read-Only Memory) na płycie głównej komputera. W Po włączeniu komputera procesor odczytuje ten kod z pamięci ROM i wykonuje go, aby sprawdzić poprawność działania podstawowych komponentów sprzętowych przed załadowaniem systemu operacyjnego.
+
+    Deskryptor przerwań znajduje się na pierwszych 255 bajtach pamięci RAM.
+
+10. Na czym polega podobieństwo przerwań sprzętowych generowanych przez urządzenia i wyjątków generowanych przez procesor?
+
+Na czym polega różnica między pamięcią fizyczną a pamięcią wirtualną?
+
+    ODP.: Podobieństwo przerwań sprzętowych i wyjątków polega na tym, że oba mechanizmy służą do przerywania normalnego toku wykonywania programu w celu obsługi określonych zdarzeń. Zarówno przerwania sprzętowe, jak i wyjątki powodują zapisanie stanu procesora na stosie i przekazanie kontroli do odpowiedniej procedury obsługi.
+
+    Przerwanie sprzętowe jest generowane przez zewnętrzne urządzenia (np. klawiaturę, mysz, timer), podczas gdy wyjątki są generowane przez sam procesor w odpowiedzi na określone warunki wewnętrzne (np. dzielenie przez zero, błąd ochrony pamięci).
+
+    Różnica między pamięcią fizyczną a pamięcią wirtualną polega na tym, że pamięć fizyczna odnosi się do rzeczywistej pamięci RAM zainstalowanej w komputerze, podczas gdy pamięć wirtualna jest abstrakcyjnym modelem pamięci, który umożliwia programom korzystanie z większej przestrzeni adresowej niż dostępna fizyczna pamięć RAM. Pamięć wirtualna wykorzystuje techniki takie jak stronicowanie i segmentacja, aby zarządzać dostępem do pamięci i umożliwia przechowywanie danych na dysku twardym, gdy brakuje miejsca w pamięci RAM.
+
+11. Uzupełnić zdanie: w trybie rzeczywistym zawartość 16-bitowego rejestru CS wskazuje początek obszaru pamięci, w którym zawarte są . . . . . . . programu, a zawartość 16-bitowego rejestru DS wskazuje obszar . . . . . . . programu.
+
+    ODP.: w trybie rzeczywistym zawartość 16-bitowego rejestru CS wskazuje początek obszaru pamięci, w którym zawarte są instrukcje programu, a zawartość 16-bitowego rejestru DS wskazuje obszar danych programu.
+
+12. Podać reprezentację binarną (lub szesnastkową) liczby zmiennoprzecinkowej +1.0 w formacie float (pole mantysy zajmuje 23 bity).
+
+    S -> 1-bit      -> znak
+    W -> 8-bitów    -> wykładnik
+    M -> 23-bity    -> mantysa
+
+#TODO
