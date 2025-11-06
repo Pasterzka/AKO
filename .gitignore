@@ -34,3 +34,6 @@ x86/
 *.tlog
 *.idb
 *.opendb
+
+
+.DS_Store

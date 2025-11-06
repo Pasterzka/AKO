@@ -1,3 +1,13 @@
+KARTKÓWKA
+
+    linia dw
+
+    movzx esi, linia+5
+    dd <- rozmiar linia
+
+    30h = '0'
+
+
 1. W trakcie obserwacji działania fragmentu programu, w którym nie występują rozkazy skoku zauważono, że zmiany wskaźnika instrukcji (licznika rozkazów) EIP przebiegają w sposób pokazany narysunku. Naszkicować analogiczny wykres dla poniższego fragmentu programu:
     mov ecx, 2
     ptl: add ah, [ebx]
@@ -7,8 +17,7 @@
 
     ODP.:
 
-    EIP Rośnie jak na wykresie obok bo pętla wykona się tylko rozkazy
-    W przyadku gdyby ecx większe od 2 to wykres miałby skoki w górę i w dół
+    Będzie jeden skok do nizszej lokalizji
 
 2. Wyjaśnić znaczenie terminu ramka stosu.
 
@@ -101,7 +110,7 @@ _kwadrat PROC stdcall
     add     esp, 4
 
     mov     ebx, [ebp+8]   ; ponowne pobranie a
-    shl     ebx, 2         ; obliczenie 4*a
+    lea     ebx,[4*ebx]        ; obliczenie 4*a
     sub     ebx, 4         ; obliczenie 4*a - 4
     add     eax, ebx       ; dodanie do wyniku rekurencji
     jmp     koniec
@@ -149,6 +158,8 @@ END
 
     Główna różnica polega na tym, że CALL jest używany do wywoływania funkcji w ramach programu, podczas gdy INT jest używany do obsługi przerwań i może prowadzić do zmiany kontekstu wykonania programu.
 
+    call nie zapisuje stanu flag, natomiast int tak, int jest wywoływany poprzez tablice deskryptorów przerwań.
+
 8. Jaką rolę w pracy komputera pełni system BIOS?
 
     ODP.: System BIOS (Basic Input/Output System) pełni kluczową rolę w pracy komputera, ponieważ jest to podstawowe oprogramowanie układowe, które inicjalizuje i testuje sprzęt komputerowy podczas uruchamiania systemu (proces POST - Power-On Self Test). BIOS zapewnia również interfejs między systemem operacyjnym a sprzętem komputera, umożliwiając komunikację z urządzeniami wejścia/wyjścia, takimi jak klawiatura, dyski twarde czy karty graficzne.
@@ -181,4 +192,29 @@ Na czym polega różnica między pamięcią fizyczną a pamięcią wirtualną?
     W -> 8-bitów    -> wykładnik
     M -> 23-bity    -> mantysa
 
-#TODO
+    ODP.:
+    Liczba +1.0 w formacie float jest reprezentowana następująco:
+
+    Znak (S): 0 (ponieważ liczba jest dodatnia)
+    Wykładnik (W): 127 (w formacie float, wykładnik jest przechowywany z przesunięciem 127, więc dla wartości 0, wykładnik wynosi 127)
+    Mantysa (M): 0 (ponieważ dla liczby 1.0, mantysa wynosi 0 po normalizacji)
+
+    Reprezentacja binarna:
+    S | W          | M
+    0 | 01111111   | 00000000000000000000000
+
+    W formacie szesnastkowym, reprezentacja ta wynosi:
+    3F800000H
+
+13. Podać zawartość czterech bajtów pamięci  (w układzie adres: wartość), które zostały zapisane w wyniku wykonania poniższych rozkazów 
+
+    mov  eax, 7E45B8H
+    fstp dword PTR [eax]
+
+    ODP.: 
+Adres: Wartość
+7E45B8H: 00
+7E45B9H: 00
+7E45BAH: 80
+7E45BBH: 3F
+
