@@ -33,7 +33,9 @@ KARTKÓWKA
 _funkcja PROC
     push    ebp
     mov     ebp, esp
-
+    push    ebx
+    push    ecx
+    push    edx
     xor     eax, eax
     mov     ebx, [ebp+12] ; wskaźnik do tablicys
 
@@ -42,7 +44,9 @@ _funkcja PROC
 
     add     ax, cx
     add     ax, dx
-
+    pop     edx
+    pop     ecx
+    pop     ebx
     pop     ebp
     ret
 _funkcja ENDP
@@ -139,11 +143,10 @@ _liczba_procesorow PROC
     push    ebp
     mov     ebp, esp
     sub     esp, 36         ; rezerwacja miejsca na SYSTEM_INFO
-    lea     eax, [ebp-36]   ; wskaźnik do SYSTEM_INFO
-    push    eax
-    call    GetSystemInfo
-    add     esp, 4
-    mov     eax, [ebp-20]   ; pobranie liczby procesorów z SYSTEM_INFO
+    lea     esi, [esp-36]   ; wskaźnik do SYSTEM_INFO
+    push    esi
+    call    GetSystemInfo   ; stdcall więc nie odejmujemy nic z esp!!!!!
+    mov     eax, [esi+20]   ; pobranie liczby procesorów z SYSTEM_INFO
     add     esp, 36         ; zwolnienie miejsca
     pop     ebp
     ret
@@ -157,8 +160,29 @@ END
     Rozkaz INT (ang. interrupt) służy do wywoływania przerwań programowych. Przerwania mogą być używane do obsługi zdarzeń sprzętowych lub programowych, takich jak błędy czy żądania systemowe. INT powoduje przejście do procedury obsługi przerwania, a także zapisuje stan procesora na stosie.
 
     Główna różnica polega na tym, że CALL jest używany do wywoływania funkcji w ramach programu, podczas gdy INT jest używany do obsługi przerwań i może prowadzić do zmiany kontekstu wykonania programu.
+    
+    INT -> najpierw flagi a potem adres powrotu
 
     call nie zapisuje stanu flag, natomiast int tak, int jest wywoływany poprzez tablice deskryptorów przerwań.
+
+
+    adres logiczny -> zbiór komponentów potrzebnych do zlokalizowania bajtu w pamięci fizycznej
+                        -> proces translacji adresów
+                            -> potrzeba znać sposób translacji obiektu
+
+                                40:0Ch -> adrea logiczny
+                                40h -> segment -> baza segmentu
+                                0Ch -> offset -> adres efefektywny
+
+                                32-bitowy adres logiczny -> offset 32-bitowy
+                                transormacja wygląda inaczej
+                                    CS -> adres bazowy
+                                    offset -> adres efektywny
+
+                                    adres bazowy + adres efektywny = adres liniowy
+
+                                    CR3 -> zawiera adres fizyczny
+
 
 8. Jaką rolę w pracy komputera pełni system BIOS?
 
@@ -166,9 +190,15 @@ END
 
     BIOS jest odpowiedzialny za ładowanie systemu operacyjnego z nośnika danych do pamięci RAM oraz za konfigurację podstawowych ustawień sprzętowych komputera.
 
+    Formatowanie dysków mamy gpt
+
 9. Bezpośrednio po włączeniu (lub zresetowaniu) komputera procesor wykonuje zestaw programów testujących podzespoły sprzętowe — gdzie znajduje się kod tych programów?
 
     ODP.: Kod programów testujących podzespoły sprzętowe, znanych jako POST (Power-On Self Test), znajduje się w pamięci ROM (Read-Only Memory) na płycie głównej komputera. W Po włączeniu komputera procesor odczytuje ten kod z pamięci ROM i wykonuje go, aby sprawdzić poprawność działania podstawowych komponentów sprzętowych przed załadowaniem systemu operacyjnego.
+
+    firmware - oprogramowanie układowe -> BIOS/UEFI -> pre system operacyjny
+                                            -> BIOS start 16-bitowy
+                                            -> UEFI start 32/64-bitowy
 
     Deskryptor przerwań znajduje się na pierwszych 255 bajtach pamięci RAM.
 
@@ -182,9 +212,16 @@ Na czym polega różnica między pamięcią fizyczną a pamięcią wirtualną?
 
     Różnica między pamięcią fizyczną a pamięcią wirtualną polega na tym, że pamięć fizyczna odnosi się do rzeczywistej pamięci RAM zainstalowanej w komputerze, podczas gdy pamięć wirtualna jest abstrakcyjnym modelem pamięci, który umożliwia programom korzystanie z większej przestrzeni adresowej niż dostępna fizyczna pamięć RAM. Pamięć wirtualna wykorzystuje techniki takie jak stronicowanie i segmentacja, aby zarządzać dostępem do pamięci i umożliwia przechowywanie danych na dysku twardym, gdy brakuje miejsca w pamięci RAM.
 
+    Trzeba odświerzać pamięć RAM
+    IF -> blokuje przyjmowanie przerwań sprzętowych
+    wyjątki maskowalne i niemaskowalne
+
 11. Uzupełnić zdanie: w trybie rzeczywistym zawartość 16-bitowego rejestru CS wskazuje początek obszaru pamięci, w którym zawarte są . . . . . . . programu, a zawartość 16-bitowego rejestru DS wskazuje obszar . . . . . . . programu.
 
     ODP.: w trybie rzeczywistym zawartość 16-bitowego rejestru CS wskazuje początek obszaru pamięci, w którym zawarte są instrukcje programu, a zawartość 16-bitowego rejestru DS wskazuje obszar danych programu.
+
+    ss -> stos
+    es -> dane dodatkowe
 
 12. Podać reprezentację binarną (lub szesnastkową) liczby zmiennoprzecinkowej +1.0 w formacie float (pole mantysy zajmuje 23 bity).
 
