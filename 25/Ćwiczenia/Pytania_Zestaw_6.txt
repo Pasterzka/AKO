@@ -1,0 +1,107 @@
+1. Poniżej podano reprezentację binarną liczby 0.3  w  postaci  32-bitowej  liczby  zmiennoprzecinkowej  (float). Uzupełnić brakujące bity mantysy w tej reprezentacji.
+
+    x01111101xxxxx011001100110011010
+
+    ODP.: 
+    10111110100110011001100110011010
+
+2. Wyjaśnić dlaczego asembler traktuje rozkaz   
+    faddp qword ptr [2*edi-2] 
+jako błędny?
+
+    ODP.: Skalowany jest rejestr bazowy -> skalować mozna tylko rejestr indeksowy oraz instrukcja faddp moze by tylko wykonywana na rejestrach
+
+3. Poniżej  podano  reprezentację  binarną  dwóch dodatnich 32-bitowych liczb binarnych zmiennoprzecinkowych (format float) x i y. Ile wynosi różnica x-y tych liczb? Wynik podać w postaci liczby zmiennoprzecinkowej float. 
+
+    x -> 0 10000110  0000 0000 0000 0000 0000 000 
+    y -> 0 10000110  1000 0010 0000 0000 0000 000  
+
+    x - y ->
+         1 10000101  0000 0100 0000 0000 0000 000
+
+4. Wyjaśnić  dlaczego  niektóre  wyjątki  koprocesora  arytmetycznego  są zazwyczaj maskowane w typowych programach generowanych przez kompilatory języków programowania?
+
+    ODP.: Wyjątki koprocesora arytmetycznego są zwykle maskowane, ponieważ większość języków i kompilatorów oczekuje kontynuacji obliczeń nawet przy zdarzeniach takich jak niedokładność czy nadmiar. Dzięki maskowaniu program nie przerywa działania, a FPU zwraca specjalne wartości (np. ∞, NaN), co upraszcza kod i zwiększa jego przenośność.
+
+5. Wyjaśnić w jakich okolicznościach podczas obliczeń wykonywanych przez koprocesor  arytmetyczny powstają nieliczby (NaN)
+
+    ODP.: Nieliczby (NaN) powstają, gdy koprocesor wykonuje operacje niezdefiniowane matematycznie, takie jak 0/0, ∞−∞, 0·∞, sqrt(liczby ujemnej) lub gdy operand jest nieprawidłowy.
+    NaN jest sygnalizowany przez ustawienie odpowiednich flag wyjątków FPU (np. invalid operation) oraz pojawienie się w wyniku mantysy z niezerowymi bitami przy wykładniku zawierającym same jedynki.
+
+6. W jakich okolicznościach koprocesor arytmetyczny generuje wyjątek niedozwolona operacja?
+
+    ODP.: Wyjątek „niedozwolona operacja” (invalid operation) powstaje, gdy koprocesor wykonuje działanie matematycznie niezdefiniowane, np. 0/0, ∞−∞, ∞/∞, 0·∞, sqrt(liczby ujemnej) bez trybu zespolonego, lub gdy używany jest nieprawidłowy operand (np. NaN lub pusty rejestr FPU).
+    Sygnalizuje go ustawienie flagi „invalid operation” w rejestrze statusu FPU.
+
+7. Jakie działania należy podjąć aby ewentualne dzielenie przez zero w obliczeniach wykonywanych przez koprocesor arytmetyczny nie powodowało wyjątku?
+
+    ODP.: Aby dzielenie przez zero w koprocesorze arytmetycznym nie powodowało wyjątku, należy zmaskować wyjątek dzielenia przez zero w rejestrze sterującym FPU. Wtedy zamiast przerwania FPU zwróci specjalną wartość (∞ lub −∞), a program może kontynuować obliczenia bez przerwania.
+
+8. Dlaczego w obliczeniach na liczbach ułamkowych występują niewielkie niedokładności? 
+
+    ODP.: W obliczeniach na liczbach ułamkowych występują niewielkie niedokładności, ponieważ liczby zmiennoprzecinkowe są reprezentowane w pamięci w postaci binarnej z ograniczoną liczbą bitów. Nie wszystkie liczby dziesiętne da się dokładnie przedstawić w tej formie, więc często powstają przybliżenia, co prowadzi do drobnych błędów zaokrągleń.
+
+9. Jakie czynności podejmuje procesor po nadejściu sygnału przerwania?
+
+    ODP.:
+    -> zapisanie śladu stosu
+    -> zapsanie flag i rejestrów
+    -> identyfikacja przerwania
+    -> obsługa przerwania
+    -> zakończenie obsługi
+    -> przywrócenie flag i rejestrów
+    -> powrót do programu
+
+10. W jaki sposób można zablokować przyjmowanie przerwań sprzętowych przez procesor.
+
+    ODP.: Ustawienie IF (Interput Flag) na 1 pozwala na pryjmowanie przerwać a IF = 0 nie pozwala na przyjmowanie przerwań
+
+11. Dlaczego  w  programach  obsługi  przerwań  sprzętowych  nie  występują  rozkazy  zapisywania  i odtwarzania stanu rejestru znaczników (ang. flags)?
+
+    ODP.: W programach obsługi przerwań sprzętowych nie trzeba jawnie zapisywać i przywracać rejestru flag, ponieważ procesor automatycznie zachowuje rejestr flag i licznik rozkazów na stosie w momencie wejścia do procedury obsługi przerwania.
+    Dzięki temu programista może bezpiecznie korzystać z rejestrów ogólnego przeznaczenia, a po zakończeniu procedury instrukcja IRET przywraca zarówno licznik rozkazów, jak i rejestr flag, zapewniając pełne odtworzenie stanu sprzed przerwania.
+
+12. W komunikacji z klawiaturą używane są kody pozycji (scan  code) i kody naciśnięcia (make  code). 
+
+Czym różnią się te kody i który z nich można odczytać poprzez port 60H?
+
+    ODP.: 
+    Kod pozycji (scan code) – to unikalny numer przypisany fizycznemu położeniu klawisza na klawiaturze, niezależny od tego, jaki znak klawisz generuje.
+
+    Kod naciśnięcia (make code) – to kod wysyłany przez klawiaturę w momencie naciśnięcia klawisza, informujący komputer, że dany klawisz został wciśnięty; przy zwolnieniu klawisza wysyłany jest tzw. break code.
+
+    Port 60H służy do odczytu make code (i break code) wysyłanego przez klawiaturę w momencie naciśnięcia lub zwolnienia klawisza.
+
+13. Omówić podstawowe zasady przesyłania informacji między klawiaturą a układami na płycie głównej komputera.
+
+    ODP.:
+        Klawiatura przesyła dane w postaci kodów naciśnięcia (make code) i kodów zwolnienia (break code) poprzez szeregowy interfejs do kontrolera klawiatury (np. 8042). Każdy klawisz ma przypisany kod pozycji (scan code).
+
+        Kody trafiają do bufora kontrolera klawiatury, skąd procesor może je odczytać poprzez port I/O 60H.
+
+        Po naciśnięciu lub zwolnieniu klawisza kontroler wysyła do procesora przerwanie sprzętowe IRQ1, informując, że w buforze dostępne są nowe dane.
+
+        Procesor wywołuje procedurę obsługi przerwania (ISR), która odczytuje kod z portu 60H, interpretuje go i przekazuje dalej do systemu operacyjnego lub aplikacji.
+
+        Dzięki kolejce przerwań i buforowi można odczytywać kody w kolejności ich pojawienia się, zapewniając niezawodne śledzenie naciśnięć wielu klawiszy.
+
+14. Omówić koncepcję działania układów DMA w komputerze.
+
+    ODP.: 
+    DMA umożliwia bezpośredni transfer danych między pamięcią a urządzeniami wejścia/wyjścia bez udziału procesora, co odciąża CPU i przyspiesza operacje I/O.
+
+    -> Urządzenie zgłasza kontrolerowi DMA potrzebę przesłania danych.
+    -> Kontroler DMA przejmuje szynę adresową, danych i sygnały sterujące, przeprowadzając transfer bezpośrednio między pamięcią a urządzeniem.
+    -> Procesor może w tym czasie wykonywać inne zadania.
+
+15.  Omówić  sposób  odwzorowania  zawartości  pamięci  ekranu  (w  trybie  tekstowym)  na  postać  tekstu wyświetlanego na ekranie
+
+    ODP.:
+    W trybie tekstowym wyświetlania na ekranie w komputerach PC pamięć ekranu (video memory) jest odwzorowywana w sposób bezpośredni na znaki i ich atrybuty, co pozwala na szybkie generowanie obrazu tekstowego.
+
+    1. Bajt kodu znaku ASCII – określa, jaki znak ma być wyświetlony.
+    2. Bajt atrybutu – określa kolor tła, kolor znaku, intensywność, migotanie itp.
+
+    Pamięć ekranu w trybie tekstowym działa jak bufor znaków i atrybutów.
+    Każdy bajt kodu znaku + bajt atrybutu → jedna komórka ekranowa.
+    Procesor może bezpośrednio manipulować pamięcią ekranu, zmieniając tekst i kolory bezpośrednio na ekranie.
