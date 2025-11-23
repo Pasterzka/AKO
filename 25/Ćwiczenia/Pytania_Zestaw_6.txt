@@ -1,15 +1,19 @@
-1. Poniżej podano reprezentację binarną liczby 0.3  w  postaci  32-bitowej  liczby  zmiennoprzecinkowej  (float). Uzupełnić brakujące bity mantysy w tej reprezentacji.
+1. Poniżej podano reprezentację binarną liczby -0.3  w  postaci  32-bitowej  liczby  zmiennoprzecinkowej  (float). Uzupełnić brakujące bity mantysy w tej reprezentacji.
 
     x01111101xxxxx011001100110011010
 
     ODP.: 
-    10111110100110011001100110011010
+    10111110100100011001100110011010
 
 2. Wyjaśnić dlaczego asembler traktuje rozkaz   
     faddp qword ptr [2*edi-2] 
 jako błędny?
 
-    ODP.: Skalowany jest rejestr bazowy -> skalować mozna tylko rejestr indeksowy oraz instrukcja faddp moze by tylko wykonywana na rejestrach
+    ODP.: faddp moze by tylko wykonywana na rejestrach koprocesora
+
+    *indeksowanie okey
+    *niemozna zrobić [2*esp-2]
+            -> 
 
 3. Poniżej  podano  reprezentację  binarną  dwóch dodatnich 32-bitowych liczb binarnych zmiennoprzecinkowych (format float) x i y. Ile wynosi różnica x-y tych liczb? Wynik podać w postaci liczby zmiennoprzecinkowej float. 
 
