@@ -179,7 +179,7 @@ END
                                     CS -> adres bazowy
                                     offset -> adres efektywny
 
-                                    adres bazowy + adres efektywny = adres liniowy
+                                    adres bazowy + adres efektywny = adres liniowy / adres fizyczny
 
                                     CR3 -> zawiera adres fizyczny
 

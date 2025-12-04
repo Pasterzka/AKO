@@ -27,6 +27,22 @@ jako błędny?
 
     ODP.: Wyjątki koprocesora arytmetycznego są zwykle maskowane, ponieważ większość języków i kompilatorów oczekuje kontynuacji obliczeń nawet przy zdarzeniach takich jak niedokładność czy nadmiar. Dzięki maskowaniu program nie przerywa działania, a FPU zwraca specjalne wartości (np. ∞, NaN), co upraszcza kod i zwiększa jego przenośność.
 
+
+    reprezentacja floatów jest często niedokładna
+                                            -> niedomiar 0,3
+
+    rejestr flag koprocesora -> ostatnie 4 flagi sygnalizują czy wystąpił wyjątek
+
+    orginalnie wyjątki są zamaskowane
+
+
+    mov ecx,9
+    et: fld1
+    loop et
+
+    -----> niedozwolona liczba
+    -----> na wierzchołku koprocesora będzie NaN ---> 0 + ∞ ----> pierwiastek liczby ujemnej ----> 0/0??
+
 5. Wyjaśnić w jakich okolicznościach podczas obliczeń wykonywanych przez koprocesor  arytmetyczny powstają nieliczby (NaN)
 
     ODP.: Nieliczby (NaN) powstają, gdy koprocesor wykonuje operacje niezdefiniowane matematycznie, takie jak 0/0, ∞−∞, 0·∞, sqrt(liczby ujemnej) lub gdy operand jest nieprawidłowy.
@@ -41,11 +57,26 @@ jako błędny?
 
     ODP.: Aby dzielenie przez zero w koprocesorze arytmetycznym nie powodowało wyjątku, należy zmaskować wyjątek dzielenia przez zero w rejestrze sterującym FPU. Wtedy zamiast przerwania FPU zwróci specjalną wartość (∞ lub −∞), a program może kontynuować obliczenia bez przerwania.
 
+    korzystając z c nic nie robimy
+    lub ustawiamy generowanie wyjątku -> zamaskować generowanie wyjątku
+
+
+    flat - dla liczby 25 bitowej tracimy dokładność dla wczytanej liczby 32 bitowej.
+
 8. Dlaczego w obliczeniach na liczbach ułamkowych występują niewielkie niedokładności? 
 
     ODP.: W obliczeniach na liczbach ułamkowych występują niewielkie niedokładności, ponieważ liczby zmiennoprzecinkowe są reprezentowane w pamięci w postaci binarnej z ograniczoną liczbą bitów. Nie wszystkie liczby dziesiętne da się dokładnie przedstawić w tej formie, więc często powstają przybliżenia, co prowadzi do drobnych błędów zaokrągleń.
 
 9. Jakie czynności podejmuje procesor po nadejściu sygnału przerwania?
+
+    czym jest przerwanie -> zdarzenie które wystąpiło
+                                        -> nie da się przewidzieć nadchodzącego przerwania
+                -> zdarzenie asynchroniczne
+                -> urządzenia zewnętrzne są źródłem przerwań
+                -> wyjątek (procesora) to przerwanie wewnętrzne (procesor) -> wiemy kiedy wystąpi
+                -> funkcje systemowe -> synchroniczne -> nie jest przerwaniem
+
+                -> błąd stronnicowania - przerwanie
 
     ODP.:
     -> zapisanie śladu stosu
@@ -109,3 +140,13 @@ Czym różnią się te kody i który z nich można odczytać poprzez port 60H?
     Pamięć ekranu w trybie tekstowym działa jak bufor znaków i atrybutów.
     Każdy bajt kodu znaku + bajt atrybutu → jedna komórka ekranowa.
     Procesor może bezpośrednio manipulować pamięcią ekranu, zmieniając tekst i kolory bezpośrednio na ekranie.
+
+
+
+
+
+    -------------
+
+    -> stos koprocesora powinien być czysty gdy kończymy działanie funkcji
+
+    -> wskaźni czy wartość jest prawidłowa na stosie koprocesora

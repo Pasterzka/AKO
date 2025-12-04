@@ -23,12 +23,12 @@ ODP.: Tekst w języku polskim zajmuje mniej miejsca w kodowaniu UTF-8 niż w UTF
 znak po konwersji: D83D DE0Eh
 
 ODP.: Pamięć:
-    27 D8
+    28 D8
     29 3D
-    2B DE
-    2D 0E
-    2F 00
-    31 00
+    2A DE
+    2B 0E
+    2C 00
+    2D 00
 
 4. Podać przykład rozkazu, w którym adres efektywny jest mniejszy od zawartości pola adresowego.
 

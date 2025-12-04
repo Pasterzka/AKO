@@ -3,13 +3,14 @@
         Wynik dd 0
     .code
         mov edx, offset Wynik
-        mov wynik, edx
+        mov wynik,dword ptr [edx]
 
     ODP.: Błąd polega na tym, że próbujesz użyć etykiety (Wynik) jako celu zapisu w instrukcji mov, zamiast rejestru lub adresu pamięci.
 
     Dwa odwołania do pamięci w jednej linijces
 
-    mov eax, dwor ptx [edx]
+    mov edx, offset Wynik
+    mov eax, dword ptr [edx]
     mov wynik, eax
 
     kiedy będzie problem? -> assembler ma ustawienie rozrózniania wielkich i małych liter
