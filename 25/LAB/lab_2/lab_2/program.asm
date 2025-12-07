@@ -11,18 +11,21 @@ extern		__write				: PROC
 
 .data
 	inBuff		db	17 dup(?)	; bufor na dane wejsciowe
-	outBuff		db	'0.', 8 dup(?), 0
+	outBuff		db	'00.', 8 dup(?), 0
 	dziesiec    dd  10
 	milion      dd  100000000          
 
-	dekoder     db  '0123456789ABCDEF' 
+	dekoder     db  '0123456789ABCDEF'
+
+	liczba		dd	?
+
 
 .code
 ; WCZYTANIE DANYCH - instrukcja do labów
 wczytaj PROC
 	push	ebp
 	mov		ebp, esp
-
+	
 	mov esi, OFFSET inBuff			; ustawienie wskaŸnika na pocz¹tek bufora
 
 	; Wczytanie liczby
@@ -108,17 +111,28 @@ wczytaj PROC
 	ret
 wczytaj ENDP
 
+; --- obliczenie (EDX:EAX * 10^8) / 2^64 ---
+oblicz PROC
+	push	eax
+	mov		liczba, edx
+	shr		edx,28
 
+	mov     eax, edx            ; eax = liczba do konwersji
+    lea     edi, outBuff+1     ; wskaŸnik na ostatni¹ pozycjê cyfr (index 9)
+    mov     ecx, 3             ; 8 cyfr do wygenerowania
 
-_main PROC
-    ; --- wczytanie liczby do EDX:EAX ---
-    call wczytaj          ; po wykonaniu: EDX = high32, EAX = low32
-
-    ; --- obliczenie floor((EDX:EAX * 10^8) / 2^64) bez FPU ---
-    ; Zastosowane rejestry:
-    ; EAX - zostanie u¿yty podczas mno¿eñ; EDX te¿ (standard dla MUL)
-    ; ECX, EBX, EDI, EBP u¿yte tymczasowo
-
+konwersja_petla_x:
+    xor     edx, edx
+    mov     ebx, 10
+    div     ebx                 ; EAX = EAX / 10, EDX = reszta (0..9)
+    add     dl, '0'
+    mov     [edi], dl
+    dec     edi
+    loop    konwersja_petla_x
+	pop		eax
+	mov		edx, liczba
+	sal		edx,4
+	sar		edx,4
     mov     ecx, edx            ; zapamiêtaj high32 (H) w ECX
     mov     ebx, 100000000      ; mno¿nik 10^8
 
@@ -141,13 +155,9 @@ _main PROC
     movzx   edx, dl             ; edx = carry (0 lub 1)
     add     ebx, edx            ; ebx = wynik t (ca³kowity, <= 99_999_999)
 
-    ; ebx zawiera wynik jako integer (0 .. 99_999_999)
-    ; KONWERSJA NA ASCII: wpisz 8 cyfr do outBuff[2..9]. outBuff[0..1] = '0','.'
-    ; u¿yj dzielenia przez 10 w pêtli
-
     mov     eax, ebx            ; eax = liczba do konwersji
-    lea     edi, outBuff+9      ; wskaŸnik na ostatni¹ pozycjê cyfr (index 9)
-    mov     ecx, 8              ; 8 cyfr do wygenerowania
+    lea     edi, outBuff+6      ; wskaŸnik na ostatni¹ pozycjê cyfr (index 9)
+    mov     ecx, 4              ; 8 cyfr do wygenerowania
 
 konwersja_petla:
     xor     edx, edx
@@ -158,16 +168,25 @@ konwersja_petla:
     dec     edi
     loop    konwersja_petla
 
-    ; outBuff[0..1] to ju¿ '0' i '.' z definicji, jeœli chcesz je ustawiæ jawnie:
-    ; mov byte ptr outBuff, '0'
-    ; mov byte ptr outBuff+1, '.'
 
     ; Wyœwietlenie wyniku (10 znaków: '0.' + 8 cyfr)
-    push    10
+    push    11
     push    offset outBuff
     push    1
     call    __write
     add     esp, 12
+
+	ret
+oblicz ENDP
+
+
+
+_main PROC
+    ; --- wczytanie liczby do EDX:EAX ---
+    call wczytaj          ; po wykonaniu: EDX = high32, EAX = low32
+
+    call oblicz          ; wykonaj obliczenia i wypisz wynik
+
 
     ; zakoñczenie programu
     push    0
