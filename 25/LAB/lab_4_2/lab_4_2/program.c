@@ -2,21 +2,21 @@
 
 #include <stdio.h>
 
-float simpson(float a, float b, int n);
+float simpson(double a, double b, int n);
 
 int main() {
-	float a, b;
+	double a, b;
 	int n;
 
 
 	printf("Wczytaj (a): ");
-	scanf("%f", &a);
+	//scanf("%f", &a);
 
 	printf("Wczytaj (b): ");
-	scanf("%f", &b);
+	//scanf("%f", &b);
 
 	printf("Wczytaj liczbe podzialow (musi byæ parzyste): ");
-	scanf("%d", &n);
+	//scanf("%d", &n);
 
 	// sprawdzenie parzystoœci n -> walidacja w simpson.asm
 	//if (n % 2 != 0) {
@@ -24,7 +24,7 @@ int main() {
 	//	return 1;
 	//}
 
-	float result = simpson(a, b, n);
+	float result = simpson(15, 100, 200);
 	printf("Wynik calkowania metoda Simpsona: %f\n", result);
 	return 0;
 }

@@ -44,7 +44,7 @@ _funkcjaX proc
 	ret 
 _funkcjaX endp
 
-; float simpson(float a, float b, int n)
+; float simpson(double a, double b, int n)
 _simpson	proc
 	; prolog
 	push	ebp
@@ -60,7 +60,7 @@ _simpson	proc
 	; WALIDACJA
 	; sprawdzenie czy n jest parzyste
 
-	mov		eax, [ebp + 16]	; n
+	mov		eax, [ebp + 24]	; n
 	and		eax, 1			; sprawdzanie czy ostatni bit jest 0
 	cmp		eax, 0
 	je		program			; n jest parzyste, kontynuuj
@@ -71,23 +71,29 @@ _simpson	proc
 	program:
 
 		; obliczanie h = (b - a) / n
-		fld		DWORD PTR [ebp + 12]	; st(0) = b
-		fld		DWORD PTR [ebp + 8]		; st(0) = a, st(1) = b
+		fld		QWORD PTR [ebp + 16]	; st(0) = b
+		fld		QWORD PTR [ebp + 8]		; st(0) = a, st(1) = b
 		fsubp	st(1), st(0)			; st(0) = b - a
-		fild	DWORD PTR [ebp + 16]	; st(0) = n, st(1) = b - a
+		fild	DWORD PTR [ebp + 24]	; st(0) = n, st(1) = b - a
 		fdivp	st(1), st(0)			; st(0) = h
 
 		fstp	DWORD PTR [ebp-4]		; zapis h na stosie (zmienna lokalna)
 
-		push	DWORD PTR [ebp + 8]		; a
+		;push	DWORD PTR [ebp + 8]		; a
+		fld		QWORD PTR [ebp + 8]	; st(0) = a
+		sub		esp, 8
+		fstp	QWORD PTR [esp]			; st(0) = a
 		call	_funkcjaX
-		add		esp, 4
+		add		esp, 8
 
 		fstp	DWORD PTR [ebp-8]		; zapis f(a) na stosie (zmienna lokalna)
 
-		push	DWORD PTR [ebp + 12]	; b
+		;push	DWORD PTR [ebp + 12]	; b
+		fld		QWORD PTR [ebp + 16]		; st(0) = b
+		sub		esp, 8
+		fstp	QWORD PTR [esp]			; st(0) = b
 		call	_funkcjaX
-		add		esp, 4
+		add		esp, 8
 
 		fstp	DWORD PTR [ebp-12]		; zapis f(b) na stosie (zmienna lokalna)
 
@@ -102,13 +108,13 @@ _simpson	proc
 
 		; pêtla for i = 1 to n-1
 		mov		ecx, 1
-		mov		ebx, [ebp + 16]		; n
+		mov		ebx, [ebp + 24]		; n
 		petla:
 			cmp		ecx, ebx
 			jge		koniec_petli
 
 			; x_i = a + i * h
-			fld		DWORD PTR [ebp + 8]		; st(0) = a
+			fld		QWORD PTR [ebp + 8]		; st(0) = a
 			push	DWORD PTR ecx
 			fild	DWORD PTR [esp]			; st(0) = i, st(1) = a
 			add		esp, 4
